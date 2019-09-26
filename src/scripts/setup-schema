@@ -44,3 +44,7 @@ if ( !Capsule::schema()->hasTable('slots') ) {
         $table->timestamps();
     });
 }
+
+Capsule::schema()->table('slots', function ($table) {
+    $table->integer('order_id');
+});
