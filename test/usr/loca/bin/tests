@@ -1,0 +1,9 @@
+#!/bin/sh 
+
+#TODO create JSON tests 
+# create calls to add users (stylists & clients)
+# create calls to add stylist slots
+# create call to create appointment for client of existing slot
+# create call to create appointment for client for stylist without an existing appointment but flexible on stylist
+# create call to create appointment for client for stylist without an existing appoint for time but flexible on time
+# create call to delete an slot for an appointment that is already booked

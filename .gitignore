@@ -1,0 +1,4 @@
+.DS_Store
+src/logs/*
+!src/logs/.gitkeep
+src/vendor

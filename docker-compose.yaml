@@ -1,0 +1,60 @@
+version: "3.7"
+services:
+  app:
+    build: ./
+    ports:
+      - "80:80"
+    networks:
+      - data
+    depends_on:
+      - data
+    environment:
+      - "DOMAIN=localhost"
+      - "PUID=501"
+      - "REMOVE_FILES=0"
+      - "WEBROOT=/var/www/html/public"
+      - "ERRORS=1"
+      - "SKIP_COMPOSER=1"
+      - "RUN_SCRIPTS=1"
+      - "MYSQL_HOST=data"
+      - "MYSQL_DATABASE=data"
+      - "MYSQL_USER=data"
+      - "MYSQL_PASSWORD=PQL9P8YVpSoEdgFRtMOyy7DR"
+    volumes:
+      - "./src:/var/www/html"
+
+  data:
+    image: mariadb:latest
+    networks:
+      - data
+    environment:
+      - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+      - "MYSQL_DATABASE=data"
+      - "MYSQL_USER=data"
+      - "MYSQL_PASSWORD=PQL9P8YVpSoEdgFRtMOyy7DR"
+    volumes:
+      - "data:/var/lib/mysql"
+
+  # test:
+  #   build: ./tests
+  #   command:
+  #    - run test scripts
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - data
+    ports:
+      - "8080:80"
+    networks:
+      - data
+    environment:
+      - "PMA_HOST=data"
+      - "PMA_USER=data"
+      - "PMA_PASSWORD=PQL9P8YVpSoEdgFRtMOyy7DR"
+
+networks:
+  data:
+
+volumes:
+  data:

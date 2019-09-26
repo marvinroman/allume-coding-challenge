@@ -1,0 +1,8 @@
+#!/bin/sh
+
+DIR=/var/www/html
+
+echo "running composer install" 
+
+cd $DIR 
+composer install 

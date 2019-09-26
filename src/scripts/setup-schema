@@ -1,0 +1,46 @@
+#!/usr/local/bin/php
+<?php 
+
+// echo out running of script so it can be seen in Docker logs
+echo "Running setup-schema script\n";
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Illuminate\Database\Capsule\Manager as Capsule;
+ 
+// Setup Eloquent 
+$capsule = new Capsule;
+$capsule->addConnection([
+    'driver' => 'mysql',
+    'host' => $_SERVER['MYSQL_HOST'],
+    'database' => $_SERVER['MYSQL_DATABASE'],
+    'username' => $_SERVER['MYSQL_USER'],
+    'password' => $_SERVER['MYSQL_PASSWORD'],
+    'charset' => $_SERVER['utf8'],
+    'collation' => $_SERVER['utf8_unicode_ci'],
+    'prefix' => '',
+]);
+$capsule->setAsGlobal();
+$capsule->bootEloquent();
+
+// Create Users table if it doesn't exist
+if ( !Capsule::schema()->hasTable('users') ) {
+    Capsule::schema()->create('users', function ($table) {
+        $table->increments('id');
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->integer('type')->default(1);
+        $table->timestamps();
+    });
+}
+
+// Create Slots table
+if ( !Capsule::schema()->hasTable('slots') ) {
+    Capsule::schema()->create('slots', function ($table) {
+        $table->increments('id');
+        $table->integer('stylist_id')->references('id')->on('users');
+        $table->integer('client_id')->nullable()->default(NULL)->references('id')->on('users');
+        $table->dateTime('slot_begin');
+        $table->timestamps();
+    });
+}
