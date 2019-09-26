@@ -25,9 +25,7 @@ class UserController extends ApiController
      */
     public function getRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO return open users
-        // Check if an ID is given for a single user else return all users
-        // return JSON object of user(s)
+        return $response->withJson(['status'=> 'failed', 'message'=> 'Reading of users is not allowed.'], 400);
     }
 
     /**
@@ -84,10 +82,7 @@ class UserController extends ApiController
      */
     public function deleteRecord(Request $request, Response $response, Array $args) : Response 
     {
-        #TODO delete existing user
-        // ensure that a user ID was given
-        // delete user
-        // return success
+        return $response->withJson(['status'=> 'failed', 'message'=> 'Deleting of users is not allowed.'], 400);
     }
 
     /**
@@ -101,10 +96,6 @@ class UserController extends ApiController
      */
     public function putRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO update existing user
-        // check if ID was given
-        // check if user exists
-        // update user
-        // return success
+        return $response->withJson(['status'=> 'failed', 'message'=> 'Updating of users is not allowed.'], 400);
     }
 }

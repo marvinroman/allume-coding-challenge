@@ -20,7 +20,7 @@ $app->group('/v1', function() {
     $this->delete('/slot', 'SlotController:deleteRecord');
     $this->put('/slot', 'SlotController:putRecord');
     //user routes
-    $this->get('/user{/id}', 'UserController:getRecord');
+    $this->get('/user', 'UserController:getRecord');
     $this->post('/user', 'UserController:postRecord');
     $this->delete('/user', 'UserController:deleteRecord');
     $this->put('/user', 'UserController:putRecord');
