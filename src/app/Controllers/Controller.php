@@ -5,7 +5,7 @@ namespace App\Controllers;
 /**
  * Base controller used to load in methods across all controllers
  */
-class Controller
+abstract class Controller
 {
 
     protected $container;

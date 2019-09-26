@@ -11,7 +11,7 @@ use Respect\Validation\Validator as v;
 // instantiate \Slim\App with settings for application
 $app = new \Slim\App([
     'settings' => [
-        'displayErrorDetails' => $_SERVER['DISPLAY_ERROR_DETAILS'],
+        'displayErrorDetails' => true,
         'logfile' => __DIR__ . '/../logs/api.log',
         'db' => [
             'driver' => 'mysql',
@@ -49,45 +49,45 @@ $container['db'] = function ($container) use ($capsule) {
 
 // Setup Twig & add into Slim container
 $container['view'] = function ($container) {
-
+    
     // settup where Twig templates are held
     $view = new \Slim\Views\Twig(__DIR__ . '/../resources/views', [
         'cache' => false,
-    ]);
-
+        ]);
+        
     // Setup ability to use baseurl & pathfor methods in templates
     $view->addExtension(new \Slim\Views\TwigExtension(
         $container->router,
         $container->request->getUri()
     ));
-
-	// calculate css version by last changed
+    
+    // calculate css version by last changed for cache busting
     $base_css_path = pathinfo(__DIR__ . '/../css/app.css');
     $base_css_version = filemtime($_SERVER['DOCUMENT_ROOT'].$url);
     $view->getEnvironment()->addGlobal('base_css_version', $base_css_version);
     
     return $view;
-
+    
 };
 
 // Add Validator into Slim container
 $container['validator'] = function ($container) {
-    return new App\Validation\Validator;
+    return new App\Models\Validator;
 };
 
 // Add AppointmentController into Slim container
 $container['AppointmentController'] = function ($container) {
-    return new \App\Controllers\AppointmentController($container);
+    return new \App\Controllers\Api\AppointmentController($container);
 };
 
 // Add SlotController into Slim container
-$container['HomeController'] = function ($container) {
-    return new \App\Controllers\HomeController($container);
+$container['UserController'] = function ($container) {
+    return new \App\Controllers\Api\UserController($container);
 };
 
 // Add SlotController into Slim container
-$container['HomeController'] = function ($container) {
-    return new \App\Controllers\HomeController($container);
+$container['SlotController'] = function ($container) {
+    return new \App\Controllers\Api\SlotController($container);
 };
 
 require_once __DIR__ . '/../app/routes.php';
