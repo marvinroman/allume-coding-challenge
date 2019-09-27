@@ -45,6 +45,9 @@ if ( !Capsule::schema()->hasTable('slots') ) {
     });
 }
 
-Capsule::schema()->table('slots', function ($table) {
-    $table->integer('order_id');
-});
+// Upgrade Slots table to include order_id
+if ( !Capsule::schema()->hasColumn('slots', 'order_id') ) {
+    Capsule::schema()->table('slots', function ($table) {
+        $table->integer('order_id');
+    });
+}
