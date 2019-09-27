@@ -89,5 +89,7 @@ $container['UserController'] = function ($container) {
 $container['SlotController'] = function ($container) {
     return new \App\Controllers\Api\SlotController($container);
 };
+// setup custom rules
+v::with('App\\Models\\Validation\\Rules\\');
 
 require_once __DIR__ . '/../app/routes.php';
