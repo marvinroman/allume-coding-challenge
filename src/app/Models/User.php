@@ -8,11 +8,16 @@ class User extends Model
 {
     protected $table = 'users';
 
+    protected $primaryKey = 'id';
+
     protected $fillable = [
         'name',
         'email',
         'type',
     ];
+
+    CONST STYLIST_TYPE = 1;
+    CONST CLIENT_TYPE = 2;
 
     /**
      * Check if user exists already based on email
