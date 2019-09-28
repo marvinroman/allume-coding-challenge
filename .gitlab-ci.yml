@@ -14,8 +14,12 @@ build_tags:
   stage: build_tags
   script:
     - echo Build started on `date` for $CI_COMMIT_TAG
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG .
-    - docker tag  $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG $CI_REGISTRY_IMAGE:latest
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker build -t $CI_REGISTRY/allume_app:$CI_COMMIT_TAG .
+    - docker tag  $CI_REGISTRY/allume_app:$CI_COMMIT_TAG $CI_REGISTRY/allume_app:latest
+    - docker push $CI_REGISTRY/allume_app:$CI_COMMIT_TAG
+    - docker build -t $CI_REGISTRY/allume_tests:$CI_COMMIT_TAG ./tests
+    - docker tag  $CI_REGISTRY/allume_tests:$CI_COMMIT_TAG $CI_REGISTRY/allume_tests:latest
+    - docker push $CI_REGISTRY/allume_tests:$CI_COMMIT_TAG
+
   only:
     - /^[0-9.]+$/
