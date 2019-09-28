@@ -32,15 +32,17 @@ class Slot extends Model
         'code' => 200
     ];
 
-    public function __construct($params) 
+    public function __construct($params = NULL) 
     {
         // Call parent contructor
         parent::__construct();
 
-        // set all params to be available to the class
-        $this->params = $params;
-        // setup datetime increments for slot/appointment
-        $this->setDatetimeIncrements();
+        if (! is_null($params)) {
+            // set all params to be available to the class
+            $this->params = $params;
+            // setup datetime increments for slot/appointment
+            $this->setDatetimeIncrements();
+        }
     }
 
     private static function convertToDateTimeObject($datetime) 
