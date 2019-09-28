@@ -32,15 +32,17 @@ class Slot extends Model
         'code' => 200
     ];
 
-    public function __construct($params) 
+    public function __construct($params = NULL) 
     {
         // Call parent contructor
         parent::__construct();
 
-        // set all params to be available to the class
-        $this->params = $params;
-        // setup datetime increments for slot/appointment
-        $this->setDatetimeIncrements();
+        if (! is_null($params)) {
+            // set all params to be available to the class
+            $this->params = $params;
+            // setup datetime increments for slot/appointment
+            $this->setDatetimeIncrements();
+        }
     }
 
     private static function convertToDateTimeObject($datetime) 
@@ -86,8 +88,7 @@ class Slot extends Model
         return self::whereIn('slot_begin', $this->increments)
             ->whereNull('client_id')
             ->where('stylist_id', $this->stylist_id)
-            ->havingRaw('COUNT(*) = ' . count($this->increments))
-            ->count() > 0;
+            ->count() == count($this->increments);
     }
 
     /**
@@ -122,6 +123,20 @@ class Slot extends Model
     }
 
     /**
+     * removed the slots for stylist & time increments
+     *
+     * @return  int  how many records were deleted
+     */
+    private function deleteSlots()
+    {
+        // delete all slots that aren't booked (client_id is NULL)
+        return self::whereIn('slot_begin', $this->increments)
+            ->where('stylist_id', $this->stylist_id)
+            ->whereNull('client_id')
+            ->delete();
+    }
+
+    /**
      * Determine whether or not givent stylist is booked for client for time increments
      *
      * @return  boolean  whether or not stylist is booked for client for the time given
@@ -131,8 +146,7 @@ class Slot extends Model
         return self::whereIn('slot_begin', $this->increments)
             ->where('stylist_id', $this->stylist_id)
             ->where('client_id', $this->client_id)
-            ->havingRaw('COUNT(*) = ' . count($this->increments))
-            ->count() > 0;
+            ->count() == count($this->increments);
     }
 
     /**
@@ -168,20 +182,14 @@ class Slot extends Model
     public function removeSlot()
     {
         $number_deleted = 0;
+        // check if stylist wants all or none deleted
         if ( $this->all_or_none ) {
+            // check that all slots are still open for the stylist
             if ( $this->slotsOpenForDesiredStylist() ) {
-                // delete all slots that aren't booked (client_id is NULL)
-                $number_deleted = self::whereIn('slot_begin', $this->increments)
-                    ->where('stylist_id', $this->stylist_id)
-                    ->whereNull('client_id')
-                    ->delete();          
+                $this->deleteSlots();
             }
         } else {
-            // delete all slots that aren't booked (client_id is NULL)
-            $number_deleted = self::whereIn('slot_begin', $this->increments)
-                ->where('stylist_id', $this->stylist_id)
-                ->whereNull('client_id')
-                ->delete();
+            $this->deleteSlots();
         }
 
         // check if the number deleted is the same as the time increments

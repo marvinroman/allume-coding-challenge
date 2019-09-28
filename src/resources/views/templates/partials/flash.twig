@@ -1,0 +1,21 @@
+{% if flash.getMessage('global') %}
+    <div class="alert alert-primary" role="alert">
+        {{ flash.getMessage('global') | first }}
+    </div>
+{% endif %}
+
+{% if flash.getMessage('error') %}
+    <div class="alert alert-danger" role="alert">
+        {{ flash.getMessage('error') | first }}
+    </div>
+{% endif %}
+{% if flash.getMessage('info') %}
+    <div class="alert alert-info" role="alert">
+        {{ flash.getMessage('info') | first }}
+    </div>
+{% endif %}
+{% if flash.getMessage('dark') %}
+    <div class="alert alert-dark" role="alert">
+        {{ flash.getMessage('dark') | first }}
+    </div>
+{% endif %}

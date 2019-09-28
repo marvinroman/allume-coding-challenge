@@ -1,0 +1,54 @@
+{% extends 'templates/app.twig' %}
+
+{% block content %}
+
+    <h1>Edit Account</h1>
+    <div class="row align-content-center mt-4">
+        <div class=" col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ account.fullname }}</h5>
+                    <form action="{{ path_for('accounts.edit') }}" method="post">
+                        <div class="form-group">
+                            <label for="id">ID</label>
+                            <input type="text" class="form-control" id="id" name="id" value="{{ account.id }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="fullname">Name</label>
+                            <input type="text" class="form-control" id="fullname" name="fullname" value="{{ account.fullname }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">Status</label>
+                            <select class="form-control" id="state" name="state">
+                                <option value="enabled" {% if account.state == 'enabled' %} selected {% endif %}>Enabled</option>
+                                <option value="disabled" {% if account.state == 'disabled' %} selected {% endif %}>Disabled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ account.email }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="access">Access</label>
+                            <select class="form-control" id="access" name="access[]" aria-describedby="accessHelp" multiple="multiple">
+                                <option value="api.leads.write" {% if account.access.api.leads.write %} selected {% endif %}>API : Leads : Write</option>
+                                {# <option value="leads.read">leads : read</option> #}
+                                <option value="api.token.write" {% if account.access.api.token.write %} selected {% endif %}>API : Token : Write</option>
+                                <option value="admin.super" {% if account.access.admin.super %} selected {% endif %}>Admin : Super</option>
+                                <option value="admin.login" {% if account.access.admin.login %} selected {% endif %}>Admin : Login</option>
+                            </select>
+                            <small id="accessHelp" class="form-text text-muted">Default access for lead generation companies will be API : Leads : Write.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+
+                    <form class="mt-1" action="{{ path_for('api.zoho.regenerate') }}/{{ account.id }}" method="post">
+                        <button type="submit" class="btn btn-primary">Regenerate API Token</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
