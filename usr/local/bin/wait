@@ -1,6 +1,5 @@
 #!/bin/bash
 
-apk add mysql-client 
 until mysql -h${MYSQL_HOST} -u${MYSQL_USER} -p${MYSQL_PASSWORD} -e 'SHOW DATABASES\g'; do
   >&2 echo "MySQL is unavailable - sleeping"
   sleep 1

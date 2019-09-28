@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# wait until application is available before starting testing
+while [[ "$(curl -s -o /dev/null -w '%{http_code}' http://app/)" != "200" ]]; do
+  echo -e "Application is unavailable - sleeping\n"
+  sleep 1
+done
+
+prettyprint() {
+  echo -e "\n\n---------\n"
+  echo -e "file: ${1}\n"
+  echo -e "Request JSON"
+  cat $1
+  echo -e "\nResponse JSON\n"
+} 
+
+echo -e "\n\nStarting Testing\n"
+echo -e "Add User Testing"
+for filename in ${TESTSDIR}/user/post/*.json; do 
+  prettyprint $filename
+  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/user 
+done 
+
+echo -e "Add Slot Testing\n"
+for filename in ${TESTSDIR}/slot/post/*.json; do 
+  echo -e "\n\n---------\n"
+  echo -e "file: ${filename}\n"
+  echo -e "Request JSON"
+  cat $filename
+  echo -e "\nResponse JSON\n"
+  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/slot 
+done 
+
+for filename in ${TESTSDIR}/appointment/post/*.json; do 
+  echo -e "\n\n---------\n"
+  echo -e "file: ${filename}\n"
+  echo -e "Request JSON"
+  cat $filename
+  echo -e "\nResponse JSON\n"
+  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/appointment 
+done 
+
+for filename in ${TESTSDIR}/slot/delete/*.json; do 
+  echo -e "\n\n---------\n"
+  echo -e "file: ${filename}\n"
+  echo -e "Request JSON"
+  cat $filename
+  echo -e "\nResponse JSON\n"
+  curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://app/v1/slot 
+done 
+
+for filename in ${TESTSDIR}/appointment/delete/*.json; do 
+  echo -e "\n\n---------\n"
+  echo -e "file: ${filename}\n"
+  echo -e "Request JSON"
+  cat $filename
+  echo -e "\nResponse JSON\n"
+  curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://app/v1/appointment 
+done 

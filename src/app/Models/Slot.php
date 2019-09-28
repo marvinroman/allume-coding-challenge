@@ -237,7 +237,9 @@ class Slot extends Model
                 $random_stylist = $slots_open_for_any_stylist->random()->toArray();
                 // update the slots for the selected stylist 
                 $this->updateSlotsForStylist($random_stylist['stylist_id']);
-                return array_merge(self::status_success, ['message' => 'Appoint scheduled for your an alternate stylist ' . User::find($slots_open_for_any_stylist['stylist_id'])->name]);
+                return array_merge(self::status_success, [
+                    'message' => 'Appointment scheduled for your an alternate stylist ' . User::find($random_stylist['stylist_id'])->name
+                    ]);
             }
         }
 
