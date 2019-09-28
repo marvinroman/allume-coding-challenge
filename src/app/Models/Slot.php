@@ -122,6 +122,20 @@ class Slot extends Model
     }
 
     /**
+     * Determine whether or not givent stylist is booked for client for time increments
+     *
+     * @return  boolean  whether or not stylist is booked for client for the time given
+     */
+    private function appointmentSet()
+    {
+        return self::whereIn('slot_begin', $this->increments)
+            ->where('stylist_id', $this->stylist_id)
+            ->where('client_id', $this->client_id)
+            ->havingRaw('COUNT(*) = ' . count($this->increments))
+            ->count() > 0;
+    }
+
+    /**
      * Add stylist slot(s) into the database 
      *
      *
@@ -201,7 +215,7 @@ class Slot extends Model
         if ( $this->slotsOpenForDesiredStylist() ) {
             // update slots with client_id already instantiated
             $this->updateSlotsForStylist();
-            return array_merge(self::status_success, ['message' => 'Appoint scheduled for your desired stylist']);
+            return array_merge(self::status_success, ['message' => 'Appointment scheduled for your desired stylist']);
         }
 
         // if client has chosen flexible_in_stylist then broaden out search for times available for all stylists
@@ -220,6 +234,21 @@ class Slot extends Model
         }
 
         return array_merge(self::status_failed, ['message' => 'An appointment with the given criteria could not be found.']);
+    }
+
+    public function cancelAppointment() 
+    {
+        // check that appointment is set for stylist & client set during initialization
+        if ( $this->appointmentSet() ) {
+            // set client ID to null for the slots
+            self::whereIn('slot_begin', $this->increments)
+                ->where('stylist_id', $this->stylist_id)
+                ->where('client_id', $this->client_id)
+                ->update(['client_id' => NULL]);
+            return array_merge(self::status_success, ['message' => 'Appointment has been canceled.']);
+        } else {
+            return array_merge(self::status_failed, ['message' => 'Appointment could not be canceled.']);
+        }
     }
 
     /**
