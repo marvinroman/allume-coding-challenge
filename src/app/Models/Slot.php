@@ -153,11 +153,22 @@ class Slot extends Model
      */
     public function removeSlot()
     {
-        // delete all slots that aren't booked (client_id is NULL)
-        $number_deleted = self::whereIn('slot_begin', $this->increments)
-            ->where('stylist_id', $this->stylist_id)
-            ->whereNull('client_id')
-            ->delete();
+        $number_deleted = 0;
+        if ( $this->all_or_none ) {
+            if ( $this->slotsOpenForDesiredStylist() ) {
+                // delete all slots that aren't booked (client_id is NULL)
+                $number_deleted = self::whereIn('slot_begin', $this->increments)
+                    ->where('stylist_id', $this->stylist_id)
+                    ->whereNull('client_id')
+                    ->delete();          
+            }
+        } else {
+            // delete all slots that aren't booked (client_id is NULL)
+            $number_deleted = self::whereIn('slot_begin', $this->increments)
+                ->where('stylist_id', $this->stylist_id)
+                ->whereNull('client_id')
+                ->delete();
+        }
 
         // check if the number deleted is the same as the time increments
         if ( $number_deleted == count($this->increments) ) {
@@ -167,7 +178,9 @@ class Slot extends Model
             $not_deleted = self::whereIn('slot_begin', $this->increments)
                 ->where('stylist_id', $this->stylist_id)
                 ->get();
-            return array_merge(self::status_success, [
+            // if all_or_none then return failure 
+            $status = $this->all_or_none ? self::status_failed : self::status_success;
+            return array_merge($status, [
                 'message' => $number_deleted . ' of ' . count($this->increments) . ' where deleted.', 
                 'not_deleted' => $not_deleted->toArray()
                 ]);
