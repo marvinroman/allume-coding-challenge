@@ -1,7 +1,8 @@
 version: "3.7"
 services:
   app:
-    build: ./
+    # build: ./
+    image: marvinroman/allume_app:0.2
     ports:
       - "81:80"
     networks:
@@ -37,7 +38,8 @@ services:
       - "data:/var/lib/mysql"
 
   test:
-    build: ./tests
+    # build: ./tests
+    image: marvinroman/allume_test:0.2
     depends_on:
       - app
     networks:
