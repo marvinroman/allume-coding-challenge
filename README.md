@@ -219,7 +219,7 @@ View [GUI](http://localhost:81/).
 #### Logs 
 There is a small GUI that will display the logs produced by the API that logs all the test transactions. The request hash is in the title of accordings so that you can match Request & Response.  View [logs](http://localhost:81/logs).  
 
-### View Database
+#### View Database
 View [PHPMyAdmin](http://localhost:8080/).  
 
 ## Test Remotely with Postman
@@ -232,3 +232,12 @@ I have setup a testing container remotely with the same containers that you can 
 I have created some [sample tests](https://www.getpostman.com/collections/40409ac010a0d99f01ab) that you use as a starting point for testing. You can import using **Import** button in Postman, choose **Import From Link**.  
 
 You will find the content that you can alter to change tests within **Body** tab. 
+
+## View Gui
+View [GUI](http://allume.marvinroman.me:81/).  
+
+### Logs 
+There is a small GUI that will display the logs produced by the API that logs all the test transactions. The request hash is in the title of accordings so that you can match Request & Response.  View [logs](http://allume.marvinroman.me:81/logs).  
+
+### View Database
+View [PHPMyAdmin](http://allume.marvinroman.me:8080/).  
