@@ -51,7 +51,7 @@ class SlotController extends ApiController
         // Validate incoming user fields
         $validation = $this->container->validator->validate( $request, [ 
             'order_id' => v::intVal()->notEmpty(),
-            'stylist_id' => v::intVal()->notEmpty(),
+            'stylist_id' => v::intVal()->isStylist(),
             'slot_begin' => v::date()->notEmpty(),
             'slot_length_min' => v::intVal()->notEmpty()->multipleOfThirty(),
         ]);
@@ -69,8 +69,8 @@ class SlotController extends ApiController
             ], 400);
         }
 
-        $Slot = new Slot();
-        $status = $Slot::addSlot($request->getParams());
+        $Slot = new Slot($request->getParams());
+        $status = $Slot->addSlot();
 
         // status code will be 200 if sucessful
         if ($status['code'] == 200) {
