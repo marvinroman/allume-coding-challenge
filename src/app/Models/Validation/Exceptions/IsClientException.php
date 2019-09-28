@@ -3,11 +3,11 @@ namespace App\Models\Validation\Exceptions;
 
 use \Respect\Validation\Exceptions\ValidationException;
 
-class MultipleOfThirtyException extends ValidationException
+class IsClientException extends ValidationException
 {
 	public static $defaultTemplates = [
 		self::MODE_DEFAULT => [
-			self::STANDARD => 'The value given is not a multiple of 30.',
+			self::STANDARD => 'A client with this ID does not exist.',
 		],
 	];
 }
