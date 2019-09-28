@@ -47,6 +47,11 @@ $container['db'] = function ($container) use ($capsule) {
     return $capsule;
 };
 
+// add Slim Flash messages
+$container['flash'] = function ($container) {
+    return new \Slim\Flash\Messages;
+};
+
 // Setup Twig & add into Slim container
 $container['view'] = function ($container) {
     
@@ -65,7 +70,10 @@ $container['view'] = function ($container) {
     $base_css_path = pathinfo(__DIR__ . '/../css/app.css');
     $base_css_version = filemtime($_SERVER['DOCUMENT_ROOT'].$url);
     $view->getEnvironment()->addGlobal('base_css_version', $base_css_version);
-    
+        
+    // let the view have access to flash messages
+    $view->getEnvironment()->addGlobal('flash', $container->flash);
+
     return $view;
     
 };
