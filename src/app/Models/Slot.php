@@ -5,6 +5,7 @@ namespace App\Models;
 use \App\Models\User;
 use \Illuminate\Support\Facades\DB;
 use \Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 
 class Slot extends Model 
 {
@@ -75,27 +76,32 @@ class Slot extends Model
         }
     }
 
+    /**
+     * Check if all increments are open for the given stylist
+     *
+     * @return  boolean  whether or not the stylis is booked for those time increments
+     */
     private function slotsOpenForDesiredStylist()
     {
         return self::whereIn('slot_begin', $this->increments)
-        ->whereNull('client_id')
-        ->where('stylist_id', $this->stylist_id)
-        ->havingRaw('COUNT(*) = ' . count($this->increments))
-        ->count() > 0;
+            ->whereNull('client_id')
+            ->where('stylist_id', $this->stylist_id)
+            ->havingRaw('COUNT(*) = ' . count($this->increments))
+            ->count() > 0;
     }
 
     /**
-     * Check or any stylists available for the given increments and if so return first value
+     * Check or any stylists available for the given increments
      *
-     * @return  mixed  Null if no values found or Model of random one pulled from the collection
+     * @return  Collection  Collection of rows that match given increments that aren't booked
      */
-    private function slotsOpenForAnyStylist() {
+    private function slotsOpenForAnyStylist() 
+    {
        return self::whereIn('slot_begin', $this->increments)
-        ->whereNull('client_id')
-        ->groupBy('stylist_id')
-        ->havingRaw('COUNT(*) = ' . count($this->increments))
-        ->get()
-        ->random();
+            ->whereNull('client_id')
+            ->groupBy('stylist_id')
+            ->havingRaw('COUNT(*) = ' . count($this->increments))
+            ->get();
     }
 
     /**
@@ -109,10 +115,10 @@ class Slot extends Model
     {
         $stylist_id = is_null($stylist_id) ? $this->stylist_id : $stylist_id;
         return self::whereIn('slot_begin', $this->increments)
-        ->where('stylist_id', $stylist_id)
-        ->whereNull('client_id')
-        ->havingRaw('COUNT(*) = ' . count($this->increments))
-        ->update(['client_id' => $this->client_id]);
+            ->where('stylist_id', $stylist_id)
+            ->whereNull('client_id')
+            ->havingRaw('COUNT(*) = ' . count($this->increments))
+            ->update(['client_id' => $this->client_id]);
     }
 
     /**
@@ -141,32 +147,75 @@ class Slot extends Model
     }
 
     /**
+     * Remove any slots that aren't booked
+     *
+     * @return  array  Array or success or failure with message 
+     */
+    public function removeSlot()
+    {
+        // delete all slots that aren't booked (client_id is NULL)
+        $number_deleted = self::whereIn('slot_begin', $this->increments)
+            ->where('stylist_id', $this->stylist_id)
+            ->whereNull('client_id')
+            ->delete();
+
+        // check if the number deleted is the same as the time increments
+        if ( $number_deleted == count($this->increments) ) {
+            return array_merge(self::status_success, ['message' => 'All the stylist slots were successfully deleted.']);
+        } else {
+            // pull the records for the given time increments that weren't deleted
+            $not_deleted = self::whereIn('slot_begin', $this->increments)
+                ->where('stylist_id', $this->stylist_id)
+                ->get();
+            return array_merge(self::status_success, [
+                'message' => $number_deleted . ' of ' . count($this->increments) . ' where deleted.', 
+                'not_deleted' => $not_deleted->toArray()
+                ]);
+        }
+
+    }
+
+    /**
      * Add client appointment to available sytlist slots
      *
      * @return  array  Array of success or failure with message 
      */
     public function addAppointment() 
     {
-        $slot_count = (int) $this->slot_length_min / 30;
 
+        // check if all available slots are open for the desired stylist 
+        // values set when instantiating class
         if ( $this->slotsOpenForDesiredStylist() ) {
+            // update slots with client_id already instantiated
             $this->updateSlotsForStylist();
             return array_merge(self::status_success, ['message' => 'Appoint scheduled for your desired stylist']);
         }
 
+        // if client has chosen flexible_in_stylist then broaden out search for times available for all stylists
         if ( $this->flexible_in_stylist ) {
+            // method will return values found 
             $slots_open_for_any_stylist = $this->slotsOpenForAnyStylist();
-            if ( $slots_open_for_any_stylist ) {
-                $slots_open_for_any_stylist = $slots_open_for_any_stylist->toArray();
-                $this->updateSlotsForStylist($slots_open_for_any_stylist['stylist_id']);
+
+            // if there is more than zero then update a random stylist
+            if ( $slots_open_for_any_stylist->count() != 0 ) {
+                // get random row and convert to an array
+                $random_stylist = $slots_open_for_any_stylist->random()->toArray();
+                // update the slots for the selected stylist 
+                $this->updateSlotsForStylist($random_stylist['stylist_id']);
                 return array_merge(self::status_success, ['message' => 'Appoint scheduled for your an alternate stylist ' . User::find($slots_open_for_any_stylist['stylist_id'])->name]);
             }
         }
 
-
         return array_merge(self::status_failed, ['message' => 'An appointment with the given criteria could not be found.']);
     }
 
+    /**
+     * factory method to get params using property 
+     *
+     * @param   string  $property  property as a string
+     *
+     * @return  mixed              return the value from the params array / null
+     */
     public function __get($property)
     {
         return isset($this->params[$property]) ? $this->params[$property] : null;

@@ -93,14 +93,44 @@ class SlotController extends ApiController
      */
     public function deleteRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO delete existing slot
-        // ensure that a slot ID was given
-        // check if the slot is booked yet
-        // if slot is not booked 
-        // delete slot
-        // return success
-        // else 
-        // return erorr
+        // create hash fingerprint for request
+        $hash = hash('md5', implode(',', $request->getParams()));
+
+        // log request along with hash
+        $this->container->logger->info('Remove Slot Request', ['hash' => $hash, 'request', $request->getParams()]);
+
+        // Validate incoming user fields
+        $validation = $this->container->validator->validate( $request, [ 
+            'order_id' => v::intVal()->notEmpty(),
+            'stylist_id' => v::intVal()->isStylist(),
+            'slot_begin' => v::date()->notEmpty(),
+            'slot_length_min' => v::intVal()->notEmpty()->multipleOfThirty(),
+        ]);
+
+        // if validation fails return error
+        if ( $validation->failed() ) {
+            $this->container->logger->error('Remove Slot Failed Validation', [
+                'hash' => $hash, 
+                'errors' => $validation->errors()
+                ]);
+            return $response->withJson([
+                'status'=> 'failed', 
+                'message'=> 'Inoming data failed validation.', 
+                'errors' => $validation->errors()
+            ], 400);
+        }
+
+        $Slot = new Slot($request->getParams());
+        $status = $Slot->removeSlot();
+
+        // status code will be 200 if sucessful
+        if ($status['code'] == 200) {
+            $this->container->logger->info('Remove Slot Response', ['hash' => $hash, 'response' => $status]);
+        } else {
+            $this->container->logger->error('Remove Slot Response', ['hash' => $hash, 'response' => $status]);
+        }
+
+        return $response->withJson($status, $status['code']);
     }
 
     /**
