@@ -86,8 +86,7 @@ class Slot extends Model
         return self::whereIn('slot_begin', $this->increments)
             ->whereNull('client_id')
             ->where('stylist_id', $this->stylist_id)
-            ->havingRaw('COUNT(*) = ' . count($this->increments))
-            ->count() > 0;
+            ->count() == count($this->increments);
     }
 
     /**
@@ -145,8 +144,7 @@ class Slot extends Model
         return self::whereIn('slot_begin', $this->increments)
             ->where('stylist_id', $this->stylist_id)
             ->where('client_id', $this->client_id)
-            ->havingRaw('COUNT(*) = ' . count($this->increments))
-            ->count() > 0;
+            ->count() == count($this->increments);
     }
 
     /**
