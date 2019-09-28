@@ -1,6 +1,14 @@
-#!/bin/sh 
+#!/bin/sh -x 
+
+LOGDIR=/var/log/tests
+LOGFILE=test.log 
+
+TESTSDIR=/usr/local/share
 
 #TODO create JSON tests 
+
+curl -X PUT --data-binary @/tmp/nginx-unitd.json http://127.0.0.1:8301/config
+
 # create calls to add users (stylists & clients)
 # create calls to add stylist slots
 # create call to create appointment for client of existing slot
