@@ -27,11 +27,13 @@ The data is held within 2 tables `users` & `slots`.
 ##### Users 
 | id | name | email | type |  
 |---|---|---|---|  
+
 The users table holds both stylists and clients and they are differentiated by column `type`.  
 
 ##### Slots
 | id | *stylist_id | *client_id | slot_begin | order_id |  
 |---|---|---|---|---|   
+
 \* These colums are populated with values from `users.id` column.  
 
 The slots table holds both slots and appointments. An appointment is a slot that is booked by a client, meaning that `client_id` is not NULL and holds the **ID** of the client that has booked the slot.  
@@ -198,8 +200,8 @@ self::whereIn('slot_begin', $this->increments)
 ```  
 
 ## Options to Test
-<a href="#test_locally">Test Locally</a>  
-<a href="#test_remotely_with_postman">Remote Using Postman</a>  
+<a href="#test-locally">Test Locally</a>  
+<a href="#test-remotely-with-postman">Remote Using Postman</a>  
 
 ## Test Locally
 
