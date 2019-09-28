@@ -80,7 +80,7 @@ $container['AppointmentController'] = function ($container) {
     return new \App\Controllers\Api\AppointmentController($container);
 };
 
-// Add SlotController into Slim container
+// Add UserController into Slim container
 $container['UserController'] = function ($container) {
     return new \App\Controllers\Api\UserController($container);
 };
@@ -89,6 +89,12 @@ $container['UserController'] = function ($container) {
 $container['SlotController'] = function ($container) {
     return new \App\Controllers\Api\SlotController($container);
 };
+
+// Add GuiController into Slim container
+$container['GuiController'] = function ($container) {
+    return new \App\Controllers\GuiController($container);
+};
+
 // setup custom rules
 v::with('App\\Models\\Validation\\Rules\\');
 
