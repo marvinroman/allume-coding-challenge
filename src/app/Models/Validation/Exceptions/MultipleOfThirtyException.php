@@ -3,7 +3,7 @@ namespace App\Models\Validation\Exceptions;
 
 use \Respect\Validation\Exceptions\ValidationException;
 
-class MatchesPasswordException extends ValidationException
+class MultipleOfThirtyException extends ValidationException
 {
 	public static $defaultTemplates = [
 		self::MODE_DEFAULT => [
