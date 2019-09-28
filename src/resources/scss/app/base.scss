@@ -1,0 +1,30 @@
+.container.content {
+    margin-top: 56px;
+    height: 100vh;
+}
+
+pre {
+    background: aliceblue;
+    padding: 1rem;
+}
+
+.card-body {
+    background: white;
+}
+
+.text-white {
+    .btn.btn-link {
+        color: white !important;
+    }
+}
+
+.icon {
+    &.refresh {
+        display: inline-block;
+        width: 1.3rem;
+    }
+}
+
+#refresh_icon {
+    fill: dimgray;
+}

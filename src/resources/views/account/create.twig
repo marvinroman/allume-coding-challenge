@@ -1,0 +1,54 @@
+{% extends 'templates/app.twig' %}
+
+{% block content %}
+    <h1>Create Account</h1>
+    <div class="row align-content-center mt-4">
+        <div class=" col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">New Account</h5>
+                    <form action="{{ path_for('accounts.create') }}" method="post">
+                        <div class="form-group">
+                            <label for="id">Username</label>
+                            <input type="text" class="form-control{{ errors.id ? ' is-invalid' : '' }}" id="id" name="id" value="{{ oldinputs.id ? oldinputs.id : randId }}" aria-describedby="idHelp">
+                            <div class="invalid-feedback">{{ errors.id | first }}</div>
+                            <small id="idHelp" class="form-text text-muted">This must be a numeric value if the account is for API consumers. You can change to the username you want if it's for login to the panel.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="fullname">Name</label>
+                            <input type="text" class="form-control{{ errors.fullname ? ' is-invalid' : '' }}" id="fullname" name="fullname" value="{{ oldinputs.fullname ? oldinputs.fullname : ''}}" placeholder="Gadgets Company">
+                            <div class="invalid-feedback">{{ errors.fullname | first }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input class="form-control{{ errors.email ? ' is-invalid' : '' }}" value="{{ oldinputs.email ? oldinputs.email : '' }}" type="email" id="email" name="email" placeholder="person@xyz.com">
+                            <div class="invalid-feedback">{{ errors.email | first }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input class="form-control{{ errors.password ? ' is-invalid' : '' }}" value="{{ oldinputs.password ? oldinputs.password : '' }}" type="password" id="password" name="password">
+                            <div class="invalid-feedback">{{ errors.password | first }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="token">API Token</label>
+                            <input type="text" class="form-control" id="token" name="token" value="{{ randToken }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="access">Access</label>
+                            <select class="form-control{{ errors.access ? ' is-invalid' : '' }}" id="access" name="access[]" aria-describedby="accessHelp" multiple="multiple">
+                                <option value="api.leads.write" selected>API : Leads : Write</option>
+                                <option value="api.token.write">API : Token : Write</option>
+                                <option value="admin.super">Admin : Super</option>
+                                <option value="admin.login">Admin : Login</option>
+                            </select>
+                            <div class="invalid-feedback">{{ errors.access | first }}</div>
+                            <small id="accessHelp" class="form-text text-muted">Default access for lead generation companies will be API : Leads : Write.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

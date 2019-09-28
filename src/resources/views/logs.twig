@@ -1,0 +1,43 @@
+{% extends 'templates/app.twig' %}
+
+{% block content %}
+    <div class="row">
+        <h1>API Logs</h1>
+    </div>
+    <div class="row mb-4">
+        <a class="btn btn-light" href="{{ path_for('logs') }}" role="button">
+            <span class="icon refresh">
+                <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 512 512">
+                    <path id="refresh_icon" d="M500.33 0h-47.41a12 12 0 0 0-12 12.57l4 82.76A247.42 247.42 0 0 0 256 8C119.34 8 7.9 119.53 8 256.19 8.1 393.07 119.1 504 256 504a247.1 247.1 0 0 0 166.18-63.91 12 12 0 0 0 .48-17.43l-34-34a12 12 0 0 0-16.38-.55A176 176 0 1 1 402.1 157.8l-101.53-4.87a12 12 0 0 0-12.57 12v47.41a12 12 0 0 0 12 12h200.33a12 12 0 0 0 12-12V12a12 12 0 0 0-12-12z"/>
+                </svg>
+            </span>
+        </a>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="accordion" id="accordionExample">
+                {% for log in logs %}
+                    {% if log %}
+                        {% set bgcolor = "" %}
+                        {% if log.level == 400 %}
+                            {% set bgcolor = " text-white bg-danger" %}
+                        {% endif %}
+                        <div class="card{{ bgcolor}}">
+                            <div class="card-header" id="heading{{ loop.index }}">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{ loop.index }}" aria-expanded="true" aria-controls="collapse{{ loop.index }}">{{ log.message }}
+                                        {{ log.context.hash }}</button>
+                                </h2>
+                            </div>
+                            <div id="collapse{{ loop.index }}" class="collapse" aria-labelledby="heading{{ loop.index }}" data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <pre>{{ log | json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

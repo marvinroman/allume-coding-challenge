@@ -1,0 +1,41 @@
+{% extends 'templates/app.twig' %}
+
+{% block content %}
+
+    <div class="row">
+        <h1>Slots</h1>
+    </div>
+
+    <div class="row mt-2">
+
+        <table class="table table-dark table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Order ID</th>
+                    <th scope="col">Slot Begin</th>
+                    <th scope="col">Stylist ID</th>
+                    <th scope="col">Stylist Name</th>
+                    <th scope="col">Client ID</th>
+                    <th scope="col">Client Name</th>
+                    <th scope="col">Booked</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in slots %}
+                    <tr>
+                        <td>{{ slot.id }}</td>
+                        <td>{{ slot.order_id }}</td>
+                        <td>{{ slot.slot_begin }}</td>
+                        <td>{{ slot.stylist_id }}</td>
+                        <td>{{ slot.stylist_name }}</td>
+                        <td>{{ slot.client_id }}</td>
+                        <td>{{ slot.client_name }}</td>
+                        <td>{{ (slot.client_name == NULL) ? 'No' : 'Yes' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
