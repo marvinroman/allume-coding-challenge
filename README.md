@@ -25,9 +25,15 @@ This application includes 3 containers:
 The data is held within 2 tables `users` & `slots`.  
 
 ##### Users 
+| id | name | email | type |  
+|---|---|---|---|  
 The users table holds both stylists and clients and they are differentiated by column `type`.  
 
 ##### Slots
+| id | *stylist_id | *client_id | slot_begin | order_id |  
+|---|---|---|---|---|   
+\* These colums are populated with values from `users.id` column.  
+
 The slots table holds both slots and appointments. An appointment is a slot that is booked by a client, meaning that `client_id` is not NULL and holds the **ID** of the client that has booked the slot.  
 
 Slots are all kept in 30 minute increments with only the `slot_begin` being set.
@@ -47,6 +53,17 @@ while ($slot_length > 0) {
 ```
 
 ##### Add Slot
+Adding a slot means making a **POST** request to `/v1/slot`.  
+**Example body**:  
+```json
+{
+	"order_id": "1",
+	"stylist_id": 6,
+	"slot_begin": "2019-09-01T10:00:00Z",
+	"slot_length_min": 600
+}
+```
+
 After passing through the router it comes to `src/app/Controllers/Api/SlotController.php` method `postRecord`. The incoming data is validated before then being passed to `src/app/Models/Slot.php` method `addSlot`. Here is where the logic starts to happen.  
 
 Since the increments are already created when the class is instantiated now we just need to loop through the increments and add them to the database. Using Eloquent `updateOrCreate` to create SQL that creates an UPSERT query that will overwrite or set `stylist_id`, `slot_begin` & `order_id`, leaving other fields alone meaning that if a slot is already booked it stays booked.  
@@ -66,6 +83,18 @@ foreach ($this->increments as $increment) {
 ```
 
 ##### Remove Slot
+Adding a slot means making a **DELETE** request to `/v1/slot`.  
+**Example body**:  
+```json
+{
+	"order_id": "2",
+	"stylist_id": 6,
+	"slot_begin": "2019-09-01T10:30:00Z",
+	"slot_length_min": 60,
+	"all_or_none": true
+}
+```
+
 After passing through the router it comes to `src/app/Controllers/Api/SlotController.php` method `deleteRecord`. The incoming data is validated before then being passed to `src/app/Models/Slot.php` method `removeSlot`. Here is where the logic starts to happen.  
 
 Here I added a bit of functionality, `all_or_nothing`, the capibility to return an `failure` if all the desired increments aren't available to be removed. If this is not chosen it will delete all slots in the given increments that are not booked.  
@@ -80,6 +109,20 @@ return self::whereIn('slot_begin', $this->increments)
 This code returns the number of records that were deleted.  
 
 ##### Book Appointment
+Adding a slot means making a **POST** request to `/v1/appointment`.  
+**Example body**:  
+```json
+{
+	"order_id": "1",
+	"stylist_id": 6,
+	"client_id": 2,
+	"slot_begin": "2019-09-01T11:30:00Z",
+	"slot_length_min": 60,
+	"flexible_in_time": 1,
+	"flexible_in_stylist": 1
+}
+```
+
 After passing through the router it comes to `src/app/Controllers/Api/AppointmentController.php` method `postRecord`. The incoming data is validated before then being passed to `src/app/Models/Slot.php` method `addAppointment`. Here is where the logic starts to happen.  
 
 To determine whether all available time increments are available the following code snippet is run from `App\Models\Slot:slotsOpenForDesiredStylist`:  
@@ -103,7 +146,9 @@ This method returns the number of rows update.
 
 ###### Extra Credit
 **flexible_in_stylist**  
+
 The search for extra stylists that are available within the same time range happens within the following snippet from `App\Models\Slot:slotsOpenForAnyStylist`:  
+
 ```php 
 return self::whereIn('slot_begin', $this->increments)
     ->whereNull('client_id')
@@ -111,9 +156,46 @@ return self::whereIn('slot_begin', $this->increments)
     ->havingRaw('COUNT(*) = ' . count($this->increments))
     ->get();
 ```  
+
 This returns the rows of stylists that are available for the given time slots.  Then once we validate that we have retrieved the records we pull a random row and make it into an array so that we can retrieve the random stylists id `$slots_open_for_any_stylist->random()->toArray()`.  
 Once we have that id we pass it to the method `App\Models\Slot:updateSlotsForStylist` covered under **Book Appointment**.  
 
+##### Cancel Appointment
+Adding a slot means making a **DELETE** request to `/v1/appointment`.  
+
+**Example body**:  
+
+```json
+{
+	"order_id": "1",
+	"stylist_id": 6,
+	"client_id": 2,
+	"slot_begin": "2019-09-01T11:30:00Z",
+	"slot_length_min": 60
+}
+```
+
+After passing through the router it comes to `src/app/Controllers/Api/AppointmentController.php` method `deleteRecord`. The incoming data is validated before then being passed to `src/app/Models/Slot.php` method `cancelAppointment`. Here is where the logic starts to happen.  
+
+First is checks that the appointment exists for the given stylist & client, this is done in the following snippet found in method `App\Models\Slot:appointmentSet`:  
+
+```php 
+return self::whereIn('slot_begin', $this->increments)
+    ->where('stylist_id', $this->stylist_id)
+    ->where('client_id', $this->client_id)
+    ->count() > count($this->increments);
+```  
+
+This returns a **boolean** based on whether the appointment was booked for the given increments. 
+
+If the appointment is booked it is they are unbooked via the following snippet found within `App\Models\Slot:cancelAppointment`:  
+
+```php 
+self::whereIn('slot_begin', $this->increments)
+    ->where('stylist_id', $this->stylist_id)
+    ->where('client_id', $this->client_id)
+    ->update(['client_id' => NULL]);
+```  
 
 ## Options to Test
 <a href="#test_locally">Test Locally</a>  
@@ -125,6 +207,24 @@ Once we have that id we pass it to the method `App\Models\Slot:updateSlotsForSty
 These are the requirements to run it on a local computer.  
 * **Docker** How to [install](https://docs.docker.com/v17.12/install/)  
 * **Docker-Compose** How to [install](https://docs.docker.com/compose/install/)  
+
+### Run
+* Clone repo `git clone https://gitlab.com/mr-coding-challenge/allume.git`  
+* Enter directory `cd allume`  
+* Startup Dockers `docker-compose up -d`  
+* Check that Dockers are up `docker ps`, you should see something similar to below.  
+```bash
+CONTAINER ID        IMAGE                   COMMAND                  CREATED             STATUS              PORTS                                   NAMES
+00362d547f4f        phpmyadmin/phpmyadmin   "/run.sh supervisord…"   7 hours ago         Up 7 hours          9000/tcp, 0.0.0.0:8080->80/tcp          allumecodetest_phpmyadmin_1
+7b13f9e1b069        allumecodetest_app      "docker-php-entrypoi…"   7 hours ago         Up 7 hours          443/tcp, 0.0.0.0:80->80/tcp, 9000/tcp   allumecodetest_app_1
+4b97862cac6a        mariadb:latest          "docker-entrypoint.s…"   7 hours ago         Up 7 hours          3306/tcp                                allumecodetest_data_1
+```  
+* check the progress of the deployment of the application server, since it has to install composer packages, and install the database schema it will take a couple minutes to deploy the first time. Run `docker logs -f [allume_app_1]`.  You will want to see wait till you see lines similar to below.  
+```bash
+2019-09-28 03:42:14,973 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2019-09-28 03:42:14,974 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+``` 
+* Test output will go be logged to 
 
 ## Test Remotely with Postman
 
