@@ -6,6 +6,7 @@ services:
       - "80:80"
     networks:
       - data
+      - tests
     depends_on:
       - data
     environment:
@@ -35,10 +36,14 @@ services:
     volumes:
       - "data:/var/lib/mysql"
 
-  # test:
-  #   build: ./tests
-  #   command:
-  #    - run test scripts
+  test:
+    build: ./tests
+    depends_on:
+      - app
+    networks:
+      - tests
+    volumes:
+      - "./logs:/var/log/tests"
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -55,6 +60,7 @@ services:
 
 networks:
   data:
+  tests:
 
 volumes:
   data:

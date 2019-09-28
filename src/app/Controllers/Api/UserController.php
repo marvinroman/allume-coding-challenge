@@ -47,15 +47,22 @@ class UserController extends ApiController
 
         // Validate incoming user fields
         $validation = $this->container->validator->validate( $request, [ 
-            'name' => v::stringType()->length(1, 50)->notEmpty(),
+            'name' => v::stringType()->length(1, 100)->notEmpty(),
             'email' => v::email()->notEmpty(),
             'type' => v::intVal()->notEmpty(),
         ]);
 
         // if validation fails return error
         if ( $validation->failed() ) {
-            $this->container->logger->error('Add User Failed Validation', ['hash' => $hash, 'request', $request->getParams()]);
-            return $response->withJson(['status'=> 'failed', 'message'=> 'Inoming data failed validation.'], 400);
+            $this->container->logger->error('Add User Failed Validation', [
+                'hash' => $hash, 
+                'errors' => $validation->errors()
+                ]);
+            return $response->withJson([
+                'status'=> 'failed', 
+                'message'=> 'Inoming data failed validation.', 
+                'errors' => $validation->errors()
+            ], 400);
         }
 
         $User = new User();

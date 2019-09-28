@@ -1,0 +1,6 @@
+{
+    "name": "Marvin Client Three",
+    "email": "client3@test.com",
+    "type": 2,
+    "expect": "success"
+}
