@@ -39,7 +39,7 @@ services:
 
   test:
     # build: ./tests
-    image: marvinroman/allume_test:0.2
+    image: marvinroman/allume_tests:0.2
     depends_on:
       - app
     networks:
