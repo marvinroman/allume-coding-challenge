@@ -22,8 +22,8 @@ services:
       - "MYSQL_DATABASE=data"
       - "MYSQL_USER=data"
       - "MYSQL_PASSWORD=PQL9P8YVpSoEdgFRtMOyy7DR"
-    volumes:
-      - "./src:/var/www/html"
+    # volumes:
+    #   - "./src:/var/www/html"
 
   data:
     image: mariadb:latest
@@ -34,14 +34,17 @@ services:
       - "MYSQL_DATABASE=data"
       - "MYSQL_USER=data"
       - "MYSQL_PASSWORD=PQL9P8YVpSoEdgFRtMOyy7DR"
-    volumes:
-      - "data:/var/lib/mysql"
+    # volumes:
+    #   - "data:/var/lib/mysql"
 
   test:
     # build: ./tests
     image: marvinroman/allume_tests:0.2
     depends_on:
       - app
+    deploy:
+      restart_policy:
+        condition: none
     networks:
       - tests
     volumes:
