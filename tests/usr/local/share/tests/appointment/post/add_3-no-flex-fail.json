@@ -1,0 +1,8 @@
+{
+    "order_id": "3",
+    "stylist_id": 4,
+    "client_id": 3,
+    "slot_begin": "2019-09-01T12:00:00Z",
+    "slot_length_min": 60,
+    "expect": "failure"
+}
