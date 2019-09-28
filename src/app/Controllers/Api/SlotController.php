@@ -3,7 +3,11 @@
 namespace App\Controllers\Api;
 
 use \App\Models\Slot;
+use \App\Models\User;
 use \App\Controllers\ApiController;
+use \Respect\Validation\Validator as v;
+use \Slim\Http\Request;
+use \Slim\Http\Response;
 
 /**
  * The class holds the methods for interacting with stylist's slots
@@ -19,11 +23,12 @@ class SlotController extends ApiController
      *
      * @return  Response                Slim Response Object
      */
-    public function getRecord($request, $response, $args) 
+    public function getRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO return open slots
-        // Check if an ID is given for a single slot else return all slots
-        // return JSON object of slot(s)
+            return $response->withJson([
+                'status'=> 'failed', 
+                'message'=> 'Reading slots is not allowed.', 
+            ], 400);
     }
 
     /**
@@ -35,15 +40,46 @@ class SlotController extends ApiController
      *
      * @return  Response                Slim Response Object
      */
-    public function postRecord($request, $response, $args) 
+    public function postRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO create new slot
-        // validatate incoming information
-        // check to make sure there isn't a slot for the given time already for given stylist
-        // add slot
-        // return success
-        // else 
-        // return error
+        // create hash fingerprint for request
+        $hash = hash('md5', implode(',', $request->getParams()));
+
+        // log request along with hash
+        $this->container->logger->info('Add Slot Request', ['hash' => $hash, 'request', $request->getParams()]);
+
+        // Validate incoming user fields
+        $validation = $this->container->validator->validate( $request, [ 
+            'order_id' => v::intVal()->notEmpty(),
+            'stylist_id' => v::intVal()->isStylist(),
+            'slot_begin' => v::date()->notEmpty(),
+            'slot_length_min' => v::intVal()->notEmpty()->multipleOfThirty(),
+        ]);
+
+        // if validation fails return error
+        if ( $validation->failed() ) {
+            $this->container->logger->error('Add Slot Failed Validation', [
+                'hash' => $hash, 
+                'errors' => $validation->errors()
+                ]);
+            return $response->withJson([
+                'status'=> 'failed', 
+                'message'=> 'Inoming data failed validation.', 
+                'errors' => $validation->errors()
+            ], 400);
+        }
+
+        $Slot = new Slot($request->getParams());
+        $status = $Slot->addSlot();
+
+        // status code will be 200 if sucessful
+        if ($status['code'] == 200) {
+            $this->container->logger->info('Add Slot Response', ['hash' => $hash, 'response' => $status]);
+        } else {
+            $this->container->logger->error('Add Slot Response', ['hash' => $hash, 'response' => $status]);
+        }
+
+        return $response->withJson($status, $status['code']);
     }
 
     /**
@@ -55,16 +91,46 @@ class SlotController extends ApiController
      *
      * @return  Response                Slim Response Object
      */
-    public function deleteRecord($request, $response, $args) 
+    public function deleteRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO delete existing slot
-        // ensure that a slot ID was given
-        // check if the slot is booked yet
-        // if slot is not booked 
-        // delete slot
-        // return success
-        // else 
-        // return erorr
+        // create hash fingerprint for request
+        $hash = hash('md5', implode(',', $request->getParams()));
+
+        // log request along with hash
+        $this->container->logger->info('Remove Slot Request', ['hash' => $hash, 'request', $request->getParams()]);
+
+        // Validate incoming user fields
+        $validation = $this->container->validator->validate( $request, [ 
+            'order_id' => v::intVal()->notEmpty(),
+            'stylist_id' => v::intVal()->isStylist(),
+            'slot_begin' => v::date()->notEmpty(),
+            'slot_length_min' => v::intVal()->notEmpty()->multipleOfThirty(),
+        ]);
+
+        // if validation fails return error
+        if ( $validation->failed() ) {
+            $this->container->logger->error('Remove Slot Failed Validation', [
+                'hash' => $hash, 
+                'errors' => $validation->errors()
+                ]);
+            return $response->withJson([
+                'status'=> 'failed', 
+                'message'=> 'Inoming data failed validation.', 
+                'errors' => $validation->errors()
+            ], 400);
+        }
+
+        $Slot = new Slot($request->getParams());
+        $status = $Slot->removeSlot();
+
+        // status code will be 200 if sucessful
+        if ($status['code'] == 200) {
+            $this->container->logger->info('Remove Slot Response', ['hash' => $hash, 'response' => $status]);
+        } else {
+            $this->container->logger->error('Remove Slot Response', ['hash' => $hash, 'response' => $status]);
+        }
+
+        return $response->withJson($status, $status['code']);
     }
 
     /**
@@ -76,9 +142,11 @@ class SlotController extends ApiController
      *
      * @return  Response                Slim Response Object
      */
-    public function putRecord($request, $response, $args)
+    public function putRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO update existing slot
-        // return error slots are allowed to be updated
+            return $response->withJson([
+                'status'=> 'failed', 
+                'message'=> 'Updated slots is not allowed.', 
+            ], 400);
     }
 }
