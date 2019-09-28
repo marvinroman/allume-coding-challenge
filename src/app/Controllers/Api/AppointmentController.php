@@ -27,9 +27,10 @@ class AppointmentController extends ApiController
      */
     public function getRecord(Request $request, Response $response, Array $args) : Response 
     {
-        #TODO return open appointments
-        // Check if an ID is given for a single appointment else return all appointments
-        // return JSON object of appointment(s)
+        return $response->withJson([
+            'status'=> 'failed', 
+            'message'=> 'Reading appointments not allowed.', 
+        ], 400);
     }
 
     /**
@@ -149,10 +150,9 @@ class AppointmentController extends ApiController
      */
     public function putRecord(Request $request, Response $response, Array $args) : Response
     {
-        #TODO update existing appointment
-        // check if ID was given
-        // check if appointment exists
-        // update appointment
-        // return success
+        return $response->withJson([
+            'status'=> 'failed', 
+            'message'=> 'Updating appointments not allowed.', 
+        ], 400);
     }
 }
