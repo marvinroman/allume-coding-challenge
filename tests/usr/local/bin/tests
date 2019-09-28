@@ -14,46 +14,33 @@ prettyprint() {
   echo -e "\nResponse JSON\n"
 } 
 
-echo -e "\n\nStarting Testing\n"
-echo -e "Add User Testing"
+echo -e "\n\nSTARTING TESTING\n"
+echo -e "ADD USER TESTING"
 for filename in ${TESTSDIR}/user/post/*.json; do 
   prettyprint $filename
   curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/user 
 done 
 
-echo -e "Add Slot Testing\n"
+echo -e "\n\nADD Slot TESTING\n"
 for filename in ${TESTSDIR}/slot/post/*.json; do 
-  echo -e "\n\n---------\n"
-  echo -e "file: ${filename}\n"
-  echo -e "Request JSON"
-  cat $filename
-  echo -e "\nResponse JSON\n"
+  prettyprint $filename
   curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/slot 
 done 
 
+echo -e "\n\nADD APPOINTMENT TESTING"
 for filename in ${TESTSDIR}/appointment/post/*.json; do 
-  echo -e "\n\n---------\n"
-  echo -e "file: ${filename}\n"
-  echo -e "Request JSON"
-  cat $filename
-  echo -e "\nResponse JSON\n"
+  prettyprint $filename
   curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/appointment 
 done 
 
+echo -e "\n\nREMOVE SLOT TESTING"
 for filename in ${TESTSDIR}/slot/delete/*.json; do 
-  echo -e "\n\n---------\n"
-  echo -e "file: ${filename}\n"
-  echo -e "Request JSON"
-  cat $filename
-  echo -e "\nResponse JSON\n"
+  prettyprint $filename
   curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://app/v1/slot 
 done 
 
+echo -e "\n\nCANCEL APPOINTMENT TESTING"
 for filename in ${TESTSDIR}/appointment/delete/*.json; do 
-  echo -e "\n\n---------\n"
-  echo -e "file: ${filename}\n"
-  echo -e "Request JSON"
-  cat $filename
-  echo -e "\nResponse JSON\n"
+  prettyprint $filename
   curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://app/v1/appointment 
 done 
