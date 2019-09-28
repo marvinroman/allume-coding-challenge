@@ -10,6 +10,10 @@ class GuiController extends Controller
     public function index($request, $response, $args) 
     {
         #TODO render blank page with menu
+        return $response->withJson([
+            'status'=> 'success', 
+            'message'=> 'Sites up.', 
+        ], 200);
     }
 
     public function viewAppointments($request, $response, $args) 
