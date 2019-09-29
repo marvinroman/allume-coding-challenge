@@ -162,7 +162,7 @@ return self::whereIn('slot_begin', $this->increments)
 This returns the rows of stylists that are available for the given time slots.  Then once we validate that we have retrieved the records we pull a random row and make it into an array so that we can retrieve the random stylists id `$slots_open_for_any_stylist->random()->toArray()`.  
 Once we have that id we pass it to the method `App\Models\Slot:updateSlotsForStylist` covered under **Book Appointment**.  
 
-**flexible_in_stylist**  
+**flexible_in_time**  
 
 The search for time blocks in the vicinity of the originally request appointment. There is a set CONST FLEX_TIME_VARIANCE which sets how far from the original appointment to search for appointments.
 
