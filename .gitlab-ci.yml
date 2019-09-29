@@ -21,7 +21,8 @@ build_tags:
   stage: build_tags
   script:
     - echo Build started on `date` for $CI_COMMIT_TAG
-    - git checkout master
+    - git fetch
+    - git checkout origin/master
     - sed -i -E "s#/badges/[0-9.]+/pipeline.svg#/badges/${CI_COMMIT_TAG}/pipeline.svg#g" README.md
     - sed -i -E "s#/allume/commits/[0-9.]+#allume/commits/${CI_COMMIT_TAG}#g" README.md
     - git commit README.md -m 'updating pipeline badge'
