@@ -31,7 +31,7 @@ build_tags:
     - sed -i -E "s#/allume/commits/[0-9.]+#allume/commits/${CI_COMMIT_TAG}#g" README.md
     - git commit README.md -m 'updating pipeline badge'
     - git remote add pipeline git@gitlab.com:mr-coding-challenge/allume.git
-    - git push master pipeline
+    - git push pipeline master
 
   only:
     - /^[0-9.]+$/
