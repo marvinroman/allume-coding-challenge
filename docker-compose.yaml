@@ -22,8 +22,8 @@ services:
       - "MYSQL_DATABASE=data"
       - "MYSQL_USER=data"
       - "MYSQL_PASSWORD=PQL9P8YVpSoEdgFRtMOyy7DR"
-    # volumes:
-    #   - "./src:/var/www/html"
+    volumes:
+      - "./src:/var/www/html"
 
   data:
     image: mariadb:latest
