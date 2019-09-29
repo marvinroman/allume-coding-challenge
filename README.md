@@ -162,6 +162,59 @@ return self::whereIn('slot_begin', $this->increments)
 This returns the rows of stylists that are available for the given time slots.  Then once we validate that we have retrieved the records we pull a random row and make it into an array so that we can retrieve the random stylists id `$slots_open_for_any_stylist->random()->toArray()`.  
 Once we have that id we pass it to the method `App\Models\Slot:updateSlotsForStylist` covered under **Book Appointment**.  
 
+**flexible_in_stylist**  
+
+The search for time blocks in the vicinity of the originally request appointment. There is a set CONST FLEX_TIME_VARIANCE which sets how far from the original appointment to search for appointments.
+
+All the bellow code snippets are found in `App\Models\Slots:bookFlexibleTime`.  
+
+The first part is to get time slots to iterate over as starting time like in the snippet below.  
+
+```php 
+$Datetime = self::convertToDateTimeObject($this->slot_begin);
+// create a new begining time of times to iterate through
+$new_slot_begin = self::subTimeVariance($Datetime);
+// get time increments to iterate through these should be times +- FLEX_TIME_VARIANCE
+$flex_increments = $this->getIncrements((self::FLEX_TIME_VARIANCE * 2) + 30, $new_slot_begin);
+```  
+
+Then we iterate through these increments and test each increment as `slot_begin`.  
+
+```php
+foreach ( $flex_increments as $increment ) {
+    $variance_datetime = self::convertToDateTimeObject($increment);
+    $increments = $this->getIncrements($this->slot_length_min, $variance_datetime);
+    if ( $this->slotsOpenForDesiredStylist($increments) ) {
+        $this->updateSlotsForStylist($this->stylist_id, $increments);
+        return [
+            'slot_begin' => $increment,
+        ];
+    }
+}
+```
+
+If an alternate time slot is not found for the desired stylist and the client is also flexible in stylist then we loop through to find alternate times for any stylist.  
+
+```php 
+if ( $this->flexible_in_stylist ) {
+    // iterate through time increments and see if appointments are available for alternate increments & any stylist
+    foreach ( $flex_increments as $increment ) {
+        $variance_datetime = self::convertToDateTimeObject($increment);
+        $increments = $this->getIncrements($this->slot_length_min, $variance_datetime);
+        $slots_open_for_any_stylist = $this->slotsOpenForAnyStylist($increments);
+        if ( $slots_open_for_any_stylist->count() != 0 ) {
+            // get random stylist from available stylist available during given time slots
+            $random_stylist = $slots_open_for_any_stylist->random()->toArray();
+            $this->updateSlotsForStylist($random_stylist['stylist_id'], $increments);
+            return [
+                'slot_begin' => $increment,
+                'stylist_id' => $random_stylist['stylist_id'],
+            ];
+        }
+    }
+}
+```
+
 ##### Cancel Appointment
 Adding a slot means making a **DELETE** request to `/v1/appointment`.  
 
