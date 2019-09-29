@@ -44,3 +44,17 @@ for filename in ${TESTSDIR}/appointment/delete/*.json; do
   prettyprint $filename
   curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://app/v1/appointment 
 done 
+
+echo -e "\n\nBOOK FLEXIBLE TIME APPOINTMENT"
+filename="/usr/local/share/tests/appointment/post/add_4-flex-time.json"
+prettyprint ${filename}
+while [[ "$(curl -s -o /dev/null -H 'Content-Type: application/json' -w '%{http_code}' -d @${filename} http://app/v1/appointment)" == "200" ]]; do 
+  prettyprint ${filename}
+done 
+
+echo -e "\n\nBOOK FLEXIBLE TIME/STYLIST APPOINTMENT"
+filename="/usr/local/share/tests/appointment/post/add_5-flex-time-stylist.json"
+prettyprint ${filename}
+while [[ "$(curl -s -o /dev/null -H 'Content-Type: application/json' -w '%{http_code}' -d @${filename} http://app/v1/appointment)" == "200" ]]; do 
+  prettyprint ${filename}
+done 
