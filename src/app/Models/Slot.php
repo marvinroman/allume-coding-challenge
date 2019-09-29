@@ -22,15 +22,17 @@ class Slot extends Model
         'order_id',
     ];
     
-    CONST status_failed = [
+    CONST STATUS_FAILED = [
         'status' => 'failed',
         'code' => 400
     ];
 
-    CONST status_success = [
+    CONST STATUS_SUCCESS = [
         'status' => 'success',
         'code' => 200
     ];
+
+    CONST FLEX_TIME_VARIANCE = 90;
 
     public function __construct($params = NULL) 
     {
@@ -60,6 +62,11 @@ class Slot extends Model
         return $Datetime->add(new \DateInterval('PT30M'));
     }
 
+    private static function subTimeVariance($Datetime)
+    {
+        return $Datetime->sub(new \DateInterval('PT' . self::FLEX_TIME_VARIANCE . 'M'));
+    }
+
     /**
      * Create an array of Datetime increments in MySQL format
      *
@@ -67,58 +74,82 @@ class Slot extends Model
      */
     private function setDatetimeIncrements() 
     {
-        $slot_length = $this->params['slot_length_min'];
-        $Datetime = self::convertToDateTimeObject($this->params['slot_begin']);
+        $slot_length = $this->slot_length_min;
+        $Datetime = self::convertToDateTimeObject($this->slot_begin);
         
+        $this->increments = self::getIncrements($slot_length, $Datetime);
+
+    }
+
+    /**
+     * get 30 minute increments
+     *
+     * @param   integer     $slot_length    Minutes from slot begin to get slot increments for
+     * @param   \Datetime   $Datetime       PHP Datetime object
+     *
+     * @return  array                       Array of datetime strings of increments
+     */
+    private function getIncrements($slot_length, $Datetime) 
+    {
+        $increments = [];
         // loop through slots in 30 minute increments until reaching zero
         while ($slot_length > 0) {
-            $this->increments[] = self::convertToMysqlDate($Datetime);
+            $increments[] = self::convertToMysqlDate($Datetime);
             $datetime = self::addThirtyMinutes($Datetime);
             $slot_length -= 30;
         }
+        return $increments;
     }
 
     /**
      * Check if all increments are open for the given stylist
+     * 
+     * @param   array   $increments  Time increments
      *
      * @return  boolean  whether or not the stylis is booked for those time increments
      */
-    private function slotsOpenForDesiredStylist()
+    private function slotsOpenForDesiredStylist($increments = NULL)
     {
-        return self::whereIn('slot_begin', $this->increments)
+        $increments = is_null($increments) ? $this->increments : $increments;
+        return self::whereIn('slot_begin', $increments)
             ->whereNull('client_id')
             ->where('stylist_id', $this->stylist_id)
-            ->count() == count($this->increments);
+            ->count() == count($increments);
     }
 
     /**
      * Check or any stylists available for the given increments
+     * 
+     * @param   array   $increments  Time increments
      *
      * @return  Collection  Collection of rows that match given increments that aren't booked
      */
-    private function slotsOpenForAnyStylist() 
+    private function slotsOpenForAnyStylist($increments = NULL) 
     {
-       return self::whereIn('slot_begin', $this->increments)
+        $increments = is_null($increments) ? $this->increments : $increments;
+        return self::whereIn('slot_begin', $increments)
             ->whereNull('client_id')
             ->groupBy('stylist_id')
-            ->havingRaw('COUNT(*) = ' . count($this->increments))
+            ->havingRaw('COUNT(*) = ' . count($increments))
             ->get();
     }
 
     /**
      * Will update the slots for given stylist to being booked by the client
      *
-     * @param   int  $stylist_id  Stylist ID if being set for other than desired stylist
+     * @param   int     $stylist_id  Stylist ID if being set for other than desired stylist
+     * @param   array   $increments  Time increments
      *
      * @return  int                Lines were affected by the update             
      */
-    private function updateSlotsForStylist($stylist_id = NULL)
+    private function updateSlotsForStylist($stylist_id = NULL, $increments = NULL)
     {
+        $increments = is_null($increments) ? $this->increments : $increments;
         $stylist_id = is_null($stylist_id) ? $this->stylist_id : $stylist_id;
-        return self::whereIn('slot_begin', $this->increments)
+        return self::whereIn('slot_begin', $increments)
             ->where('stylist_id', $stylist_id)
             ->whereNull('client_id')
-            ->havingRaw('COUNT(*) = ' . count($this->increments))
+            ->havingRaw('COUNT(*) = ' . count($increments))
             ->update(['client_id' => $this->client_id]);
     }
 
@@ -150,6 +181,52 @@ class Slot extends Model
     }
 
     /**
+     * Books time in flexible time before or after given slot
+     *
+     * @return  mixed  False if alternate time is not found, array or stylist_id & alternate slot_begin time
+     */
+    private function bookFlexibleTime()
+    {
+        $Datetime = self::convertToDateTimeObject($this->slot_begin);
+        // create a new begining time of times to iterate through
+        $new_slot_begin = self::subTimeVariance($Datetime);
+        // get time increments to iterate through these should be times +- FLEX_TIME_VARIANCE
+        $flex_increments = $this->getIncrements((self::FLEX_TIME_VARIANCE * 2) + 30, $new_slot_begin);
+
+        // iterate through time increments and see if appointments are available for alternate increments
+        foreach ( $flex_increments as $increment ) {
+            $variance_datetime = self::convertToDateTimeObject($increment);
+            $increments = $this->getIncrements($this->slot_length_min, $variance_datetime);
+            if ( $this->slotsOpenForDesiredStylist($increments) ) {
+                $this->updateSlotsForStylist($this->stylist_id, $increments);
+                return [
+                    'slot_begin' => $increment,
+                ];
+            }
+        }
+
+        if ( $this->flexible_in_stylist ) {
+            // iterate through time increments and see if appointments are available for alternate increments & any stylist
+            foreach ( $flex_increments as $increment ) {
+                $variance_datetime = self::convertToDateTimeObject($increment);
+                $increments = $this->getIncrements($this->slot_length_min, $variance_datetime);
+                $slots_open_for_any_stylist = $this->slotsOpenForAnyStylist($increments);
+                if ( $slots_open_for_any_stylist->count() != 0 ) {
+                    // get random stylist from available stylist available during given time slots
+                    $random_stylist = $slots_open_for_any_stylist->random()->toArray();
+                    $this->updateSlotsForStylist($random_stylist['stylist_id'], $increments);
+                    return [
+                        'slot_begin' => $increment,
+                        'stylist_id' => $random_stylist['stylist_id'],
+                    ];
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Add stylist slot(s) into the database 
      *
      *
@@ -171,7 +248,7 @@ class Slot extends Model
             );
         }
 
-        return array_merge(self::status_success, ['message' => 'Slots successfully added.']);
+        return array_merge(self::STATUS_SUCCESS, ['message' => 'Slots successfully added.']);
     }
 
     /**
@@ -194,14 +271,14 @@ class Slot extends Model
 
         // check if the number deleted is the same as the time increments
         if ( $number_deleted == count($this->increments) ) {
-            return array_merge(self::status_success, ['message' => 'All the stylist slots were successfully deleted.']);
+            return array_merge(self::STATUS_SUCCESS, ['message' => 'All the stylist slots were successfully deleted.']);
         } else {
             // pull the records for the given time increments that weren't deleted
             $not_deleted = self::whereIn('slot_begin', $this->increments)
                 ->where('stylist_id', $this->stylist_id)
                 ->get();
             // if all_or_none then return failure 
-            $status = $this->all_or_none ? self::status_failed : self::status_success;
+            $status = $this->all_or_none ? self::STATUS_FAILED : self::STATUS_SUCCESS;
             return array_merge($status, [
                 'message' => $number_deleted . ' of ' . count($this->increments) . ' where deleted.', 
                 'not_deleted' => $not_deleted->toArray()
@@ -223,7 +300,7 @@ class Slot extends Model
         if ( $this->slotsOpenForDesiredStylist() ) {
             // update slots with client_id already instantiated
             $this->updateSlotsForStylist();
-            return array_merge(self::status_success, ['message' => 'Appointment scheduled for your desired stylist']);
+            return array_merge(self::STATUS_SUCCESS, ['message' => 'Appointment scheduled for your desired stylist']);
         }
 
         // if client has chosen flexible_in_stylist then broaden out search for times available for all stylists
@@ -237,15 +314,39 @@ class Slot extends Model
                 $random_stylist = $slots_open_for_any_stylist->random()->toArray();
                 // update the slots for the selected stylist 
                 $this->updateSlotsForStylist($random_stylist['stylist_id']);
-                return array_merge(self::status_success, [
-                    'message' => 'Appointment scheduled for your an alternate stylist ' . User::find($random_stylist['stylist_id'])->name
+                return array_merge(self::STATUS_SUCCESS, [
+                    'message' => 'Appointment scheduled for an alternate stylist ' . User::find($random_stylist['stylist_id'])->name
                     ]);
             }
         }
 
-        return array_merge(self::status_failed, ['message' => 'An appointment with the given criteria could not be found.']);
+        // if a client is flexible_in_time then broaden out the search for times available with a variance in minutes set by CONST FLEX_TIME_VARIANCE
+        if ( $this->flexible_in_time ) {
+            // bookFlexibleTime searches alternate times and alternate stylists if flexible_in_stylist is also true
+            $status = $this->bookFlexibleTime();
+            // $status is false if no times were found
+            if ( $status ) {
+                // if stylist_id is set then the appointment was booked for an alternate stylist
+                if ( isset($status['stylist_id']) ) {
+                    return array_merge(self::STATUS_SUCCESS, [
+                        'message' => 'Appointment scheduled for an alternate stylist ' . User::find($status['stylist_id'])->name . ', with an alternate time . ' . $status['slot_begin']
+                        ]);        
+                } else {
+                    return array_merge(self::STATUS_SUCCESS, [
+                        'message' => 'Appointment scheduled for with an alternate time . ' . $status['slot_begin']
+                        ]);  
+                }
+            }
+        }
+
+        return array_merge(self::STATUS_FAILED, ['message' => 'An appointment with the given criteria could not be found.']);
     }
 
+    /**
+     * cancel appointment for client
+     *
+     * @return  array  success or failure array with message
+     */
     public function cancelAppointment() 
     {
         // check that appointment is set for stylist & client set during initialization
@@ -255,9 +356,9 @@ class Slot extends Model
                 ->where('stylist_id', $this->stylist_id)
                 ->where('client_id', $this->client_id)
                 ->update(['client_id' => NULL]);
-            return array_merge(self::status_success, ['message' => 'Appointment has been canceled.']);
+            return array_merge(self::STATUS_SUCCESS, ['message' => 'Appointment has been canceled.']);
         } else {
-            return array_merge(self::status_failed, ['message' => 'Appointment could not be canceled.']);
+            return array_merge(self::STATUS_FAILED, ['message' => 'Appointment could not be canceled.']);
         }
     }
 
