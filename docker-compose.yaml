@@ -1,9 +1,10 @@
 version: "3.7"
 services:
   app:
-    build: ./
+    # build: ./
+    image: marvinroman/allume_app:0.2.2
     ports:
-      - "80:80"
+      - "81:80"
     networks:
       - data
       - tests
@@ -33,13 +34,17 @@ services:
       - "MYSQL_DATABASE=data"
       - "MYSQL_USER=data"
       - "MYSQL_PASSWORD=PQL9P8YVpSoEdgFRtMOyy7DR"
-    volumes:
-      - "data:/var/lib/mysql"
+    # volumes:
+    #   - "data:/var/lib/mysql"
 
   test:
-    build: ./tests
+    # build: ./tests
+    image: marvinroman/allume_tests:0.2.2
     depends_on:
       - app
+    deploy:
+      restart_policy:
+        condition: none
     networks:
       - tests
     volumes:

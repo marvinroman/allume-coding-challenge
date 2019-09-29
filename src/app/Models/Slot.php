@@ -186,10 +186,10 @@ class Slot extends Model
         if ( $this->all_or_none ) {
             // check that all slots are still open for the stylist
             if ( $this->slotsOpenForDesiredStylist() ) {
-                $this->deleteSlots();
+                $number_deleted = $this->deleteSlots();
             }
         } else {
-            $this->deleteSlots();
+            $number_deleted = $this->deleteSlots();
         }
 
         // check if the number deleted is the same as the time increments

@@ -27,11 +27,13 @@ The data is held within 2 tables `users` & `slots`.
 ##### Users 
 | id | name | email | type |  
 |---|---|---|---|  
+
 The users table holds both stylists and clients and they are differentiated by column `type`.  
 
 ##### Slots
 | id | *stylist_id | *client_id | slot_begin | order_id |  
 |---|---|---|---|---|   
+
 \* These colums are populated with values from `users.id` column.  
 
 The slots table holds both slots and appointments. An appointment is a slot that is booked by a client, meaning that `client_id` is not NULL and holds the **ID** of the client that has booked the slot.  
@@ -198,8 +200,8 @@ self::whereIn('slot_begin', $this->increments)
 ```  
 
 ## Options to Test
-<a href="#test_locally">Test Locally</a>  
-<a href="#test_remotely_with_postman">Remote Using Postman</a>  
+<a href="#test-locally">Test Locally</a>  
+<a href="#test-remotely-with-postman">Remote Using Postman</a>  
 
 ## Test Locally
 
@@ -211,22 +213,33 @@ These are the requirements to run it on a local computer.
 ### Run
 * Clone repo `git clone https://gitlab.com/mr-coding-challenge/allume.git`  
 * Enter directory `cd allume`  
-* Startup Dockers `docker-compose up -d`  
-* Check that Dockers are up `docker ps`, you should see something similar to below.  
-```bash
-CONTAINER ID        IMAGE                   COMMAND                  CREATED             STATUS              PORTS                                   NAMES
-00362d547f4f        phpmyadmin/phpmyadmin   "/run.sh supervisord…"   7 hours ago         Up 7 hours          9000/tcp, 0.0.0.0:8080->80/tcp          allumecodetest_phpmyadmin_1
-7b13f9e1b069        allumecodetest_app      "docker-php-entrypoi…"   7 hours ago         Up 7 hours          443/tcp, 0.0.0.0:80->80/tcp, 9000/tcp   allumecodetest_app_1
-4b97862cac6a        mariadb:latest          "docker-entrypoint.s…"   7 hours ago         Up 7 hours          3306/tcp                                allumecodetest_data_1
-```  
-* check the progress of the deployment of the application server, since it has to install composer packages, and install the database schema it will take a couple minutes to deploy the first time. Run `docker logs -f [allume_app_1]`.  You will want to see wait till you see lines similar to below.  
-```bash
-2019-09-28 03:42:14,973 INFO success: php-fpm entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-2019-09-28 03:42:14,974 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-``` 
-* Test output will go be logged to 
+* Startup Dockers and tail logs `docker-compose up -d && tail -f logs/test.log`  
+
+### View Gui
+View [GUI](http://localhost:81/).  
+
+#### Logs 
+There is a small GUI that will display the logs produced by the API that logs all the test transactions. The request hash is in the title of accordings so that you can match Request & Response.  View [logs](http://localhost:81/logs).  
+
+#### View Database
+View [PHPMyAdmin](http://localhost:8080/).  
 
 ## Test Remotely with Postman
+I have setup a testing container remotely with the same containers that you can deploy locally.
 
 ### Requirements 
-I have setup a testing container remotely with the same container and 
+* [Postman](https://www.getpostman.com/) - is a platform for API testing.  
+
+## Testing
+I have created some [sample tests](https://www.getpostman.com/collections/40409ac010a0d99f01ab) that you use as a starting point for testing. You can import using **Import** button in Postman, choose **Import From Link**.  
+
+You will find the content that you can alter to change tests within **Body** tab. 
+
+## View Gui
+View [GUI](http://allume.marvinroman.me:81/).  
+
+### Logs 
+There is a small GUI that will display the logs produced by the API that logs all the test transactions. The request hash is in the title of accordings so that you can match Request & Response.  View [logs](http://allume.marvinroman.me:81/logs).  
+
+### View Database
+View [PHPMyAdmin](http://allume.marvinroman.me:8080/).  
