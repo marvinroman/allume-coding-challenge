@@ -1,4 +1,4 @@
-[![pipeline status](https://gitlab.com/mr-coding-challenge/allume/badges/0.2.11/pipeline.svg)](https://gitlab.com/mr-coding-challengeallume/commits/0.2.11)
+[![pipeline status](https://gitlab.com/mr-coding-challenge/allume/badges/0.2.10/pipeline.svg)](https://gitlab.com/mr-coding-challengeallume/commits/0.2.10)
 
 # Allume Coding Challenge 
 This application is meant to be a backend implimentation of a marketplace to connect Clients with Stylist to book appointments in 30 minute increments. I have chosen to expand on the initial requirements and exanded it to become an interactive API that a Web or Mobile application could both interact with using JSON.
