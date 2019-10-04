@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # wait until application is available before starting testing
-while [[ "$(curl -s -o /dev/null -w '%{http_code}' http://app/)" != "200" ]]; do
+while [[ "$(curl -s -o /dev/null -w '%{http_code}' http://allume/)" != "200" ]]; do
   echo -e "Application is unavailable - sleeping\n"
   sleep 1
 done
@@ -18,43 +18,43 @@ echo -e "\n\nSTARTING TESTING\n"
 echo -e "ADD USER TESTING"
 for filename in ${TESTSDIR}/user/post/*.json; do 
   prettyprint $filename
-  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/user 
+  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://allume/v1/user 
 done 
 
 echo -e "\n\nADD Slot TESTING\n"
 for filename in ${TESTSDIR}/slot/post/*.json; do 
   prettyprint $filename
-  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/slot 
+  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://allume/v1/slot 
 done 
 
 echo -e "\n\nADD APPOINTMENT TESTING"
 for filename in ${TESTSDIR}/appointment/post/*.json; do 
   prettyprint $filename
-  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://app/v1/appointment 
+  curl -X POST -H "Content-Type: application/json" -d "@${filename}" http://allume/v1/appointment 
 done 
 
 echo -e "\n\nREMOVE SLOT TESTING"
 for filename in ${TESTSDIR}/slot/delete/*.json; do 
   prettyprint $filename
-  curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://app/v1/slot 
+  curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://allume/v1/slot 
 done 
 
 echo -e "\n\nCANCEL APPOINTMENT TESTING"
 for filename in ${TESTSDIR}/appointment/delete/*.json; do 
   prettyprint $filename
-  curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://app/v1/appointment 
+  curl -X DELETE -H "Content-Type: application/json" -d "@${filename}" http://allume/v1/appointment 
 done 
 
 echo -e "\n\nBOOK FLEXIBLE TIME APPOINTMENT"
 filename="/usr/local/share/tests/appointment/post/add_4-flex-time.json"
 prettyprint ${filename}
-while [[ "$(curl -s -o /dev/null -H 'Content-Type: application/json' -w '%{http_code}' -d @${filename} http://app/v1/appointment)" == "200" ]]; do 
+while [[ "$(curl -s -o /dev/null -H 'Content-Type: application/json' -w '%{http_code}' -d @${filename} http://allume/v1/appointment)" == "200" ]]; do 
   prettyprint ${filename}
 done 
 
 echo -e "\n\nBOOK FLEXIBLE TIME/STYLIST APPOINTMENT"
 filename="/usr/local/share/tests/appointment/post/add_5-flex-time-stylist.json"
 prettyprint ${filename}
-while [[ "$(curl -s -o /dev/null -H 'Content-Type: application/json' -w '%{http_code}' -d @${filename} http://app/v1/appointment)" == "200" ]]; do 
+while [[ "$(curl -s -o /dev/null -H 'Content-Type: application/json' -w '%{http_code}' -d @${filename} http://allume/v1/appointment)" == "200" ]]; do 
   prettyprint ${filename}
 done 
