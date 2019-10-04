@@ -1,4 +1,4 @@
-[![pipeline status](https://gitlab.com/mr-coding-challenge/allume/badges/0.2.16/pipeline.svg)](https://gitlab.com/mr-coding-challenge/allume/commits/0.2.16)
+[![pipeline status](https://gitlab.com/mr-coding-challenge/allume/badges/0.0.16/pipeline.svg)](https://gitlab.com/mr-coding-challenge/allume/commits/0.0.16)
 
 # Allume Coding Challenge
 
