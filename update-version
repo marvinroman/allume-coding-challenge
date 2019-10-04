@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [[ -z "$1" ]]; then
+  echo "You must enter a version in order to update the version"
+  echo "example: ./update-version 0.0.1"
+  exit 1
+else 
+  version=$1
+fi
+
+echo "VERSION: ${version}"
+
+if [[ -z "$2" ]]; then 
+  message="bumped version"
+else 
+  message="$2"
+fi 
+
+sed -i '' -E "s#/[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?#/${version}#g" README.md 
+
+git commit Dockerfile -m "$message"
+git tag -a $version -m "$message"
