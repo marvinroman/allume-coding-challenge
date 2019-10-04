@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  app:
+  allume:
     # build: ./
     image: marvinroman/allume_app:0.2.4
     ports:
