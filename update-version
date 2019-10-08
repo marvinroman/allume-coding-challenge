@@ -20,3 +20,4 @@ sed -i '' -E "s#/[0-9]{1,2}\.[0-9]{1,2}(\.[0-9]{1,2})?#/${version}#g" README.md
 
 git commit README.md -m "$message"
 git tag -a $version -m "$message"
+git push --tags
